@@ -9,7 +9,7 @@ This is a project to replace Internet Explorer's tasks for SoulWorker player.
     - Currently i had hard-coded it to use English Patch only. "Devs" can edit this.
 
 # Some more words:
-1. For devs who edit or fork this, PLEASE DO NOT STEAL OTHERS' ACCOUNTS. It's just sad.
+1. For devs who edit or fork this, PLEASE DO NOT STEAL OTHERS' ACCOUNTS IN ANY WAYS. It's just sad.
 2. Please help me maintain and fix my dirty codes.
 3. Thank you.
 
