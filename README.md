@@ -12,3 +12,8 @@ This is a project to replace Internet Explorer's tasks for SoulWorker player.
 1. For devs who edit or fork this, PLEASE DO NOT STEAL OTHERS' ACCOUNTS. It's just sad.
 2. Please help me maintain and fix my dirty codes.
 3. Thank you.
+
+# Requirements for devs:
+1. Visual Studio 2013 or higher. I have used VS2015preview3 for this project.
+2. .NET Framework 4.0 Full Profile.
+3. .NET Framework 3.5 SP1.
