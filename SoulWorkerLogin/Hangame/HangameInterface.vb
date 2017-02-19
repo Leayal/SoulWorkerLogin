@@ -1,0 +1,3 @@
+﻿Module HangameInterface
+
+End Module
