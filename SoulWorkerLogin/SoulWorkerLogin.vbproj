@@ -304,13 +304,13 @@
     <EmbeddedResource Include="Ionic.Zip.Reduced.dll" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ExtendedWebClient.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Leayal.Forms.dll" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SharpCompress.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ExtendedWebClient.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -100,7 +100,7 @@ Namespace Classes.Patches
 #End Region
 
 #Region "WebClient Finished Events"
-        Private Sub myWebClient_DownloadStringCompleted(ByVal sender As Object, ByVal e As ExtendedWebClient.DownloadStringFinishedEventArgs) Handles myWebClient.DownloadStringCompleted
+        Private Sub myWebClient_DownloadStringCompleted(ByVal sender As Object, ByVal e As DownloadStringFinishedEventArgs) Handles myWebClient.DownloadStringCompleted
             If (e.Error IsNot Nothing) Then
                 Me.RaiseEvent_HandledException(e.Error)
             ElseIf (e.Cancelled) Then
@@ -257,7 +257,6 @@ Namespace Classes.Patches
             If (IO.File.Exists(myPreciousRawFile)) Then
                 Me.RaiseEvent_StepChanged(LanguageManager.GetMessage("Patch_GetVersion", "Get patch version info"))
                 Dim ver As String = ParseVersion(myLang, Me.myWebClient.DownloadString(DefineValues.EnglishPatch.DatabaseVersionXml))
-                MessageBox.Show(ver)
                 Dim dtVer As Date = DefineValues.DerpDate.ParseExact(ver)
                 Dim sha1 As String = CommonMethods.GetSHA1FromFile(myPreciousRawFile)
                 Dim MemDictionary As New Dictionary(Of String, Byte())()

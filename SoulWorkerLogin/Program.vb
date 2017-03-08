@@ -41,7 +41,6 @@ Module Program
             Me.IsSingleInstance = True
             Me.EnableVisualStyles = True
             Me.SaveMySettingsOnExit = False
-            Me.ShutdownStyle = ShutdownMode.AfterMainFormCloses
             Me.ShutdownStyle = Global.Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
             AddHandler Microsoft.Win32.SystemEvents.UserPreferenceChanged, AddressOf App_UserPreferenceChangedEventArgs
         End Sub
@@ -59,6 +58,7 @@ Module Program
             Classes.ProcessesWatcher.Instance.Dispose()
             MyBase.OnShutdown()
         End Sub
+
         Protected Overrides Function OnStartup(eventArgs As StartupEventArgs) As Boolean
             If (IsSetArg(eventArgs.CommandLine, "dumpversionout")) Then
                 Using fs As IO.FileStream = IO.File.Create(IO.Path.Combine(Me.Info.DirectoryPath(), "SWWebClientLiteVersion.dat"))

@@ -20,7 +20,7 @@ namespace Leayal.Net
             this.innerWebClient.DownloadStringCompleted += InnerWebClient_DownloadStringCompleted;
             this.innerWebClient.DownloadDataCompleted += InnerWebClient_DownloadDataCompleted;
             this.innerWebClient.DownloadFileCompleted += InnerWebClient_DownloadFileCompleted;
-            this.innerWebClient.DownloadProgressChanged += DownloadProgressChanged;
+            this.innerWebClient.DownloadProgressChanged += InnerWebClient_DownloadProgressChanged;
             this.retried = 0;
             this.Retry = 4;
             this.LastURL = null;
@@ -28,26 +28,295 @@ namespace Leayal.Net
             this.IsBusy = false;
         }
 
+        private void InnerWebClient_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            if (e.UserState is DownloadAsyncWrapper)
+            { }
+            else
+            {
+                this.DownloadProgressChanged?.Invoke(sender, e);
+                //this.OnDownloadProgressChanged(e);
+            }
+        }
+
         #region "Properties"
         private short Retry { get; set; }
         public bool IsBusy { get; private set; }
         public Uri LastURL { get; private set; }
         public WebHeaderCollection Headers { get { return this.innerWebClient.Headers; } set { this.innerWebClient.Headers = value; } }
-        public WebHeaderCollection ResponseHeaders { get { return this.innerWebClient.ResponseHeaders; }}
         public IWebProxy Proxy { get { return this.innerWebClient.Proxy; } set { this.innerWebClient.Proxy = value; } }
         public System.Net.Cache.RequestCachePolicy CachePolicy { get { return this.innerWebClient.CachePolicy; } set { this.innerWebClient.CachePolicy = value; } }
         public int TimeOut { get { return this.innerWebClient.TimeOut; } set { this.innerWebClient.TimeOut = value; } }
         public string UserAgent { get { return this.innerWebClient.UserAgent; } set { this.innerWebClient.UserAgent = value; } }
+        public WebHeaderCollection ResponseHeaders { get { return this.innerWebClient.ResponseHeaders; } }
         #endregion
 
-        #region "Streams"
-        public Stream OpenRead(string address)
+        #region "Open"
+        public WebRequest CreateRequest(Uri url, string _method, WebHeaderCollection _headers, IWebProxy _proxy, int _timeout, System.Net.Cache.RequestCachePolicy _cachePolicy)
         {
-            return this.innerWebClient.OpenRead(address);
+            if (this.IsHTTP(url))
+            {
+                HttpWebRequest request = HttpWebRequest.Create(url) as HttpWebRequest;
+                HttpWebRequestHeaders placeholder = new HttpWebRequestHeaders();
+
+                foreach (string key in _headers.AllKeys)
+                    switch (key)
+                    {
+                        case "Accept":
+                            placeholder[HttpRequestHeader.Accept] = _headers[HttpRequestHeader.Accept];
+                            _headers.Remove(HttpRequestHeader.Accept);
+                            break;
+                        case "ContentType":
+                            placeholder[HttpRequestHeader.ContentType] = _headers[HttpRequestHeader.ContentType];
+                            _headers.Remove(HttpRequestHeader.ContentType);
+                            break;
+                        case "Expect":
+                            placeholder[HttpRequestHeader.Expect] = _headers[HttpRequestHeader.Expect];
+                            _headers.Remove(HttpRequestHeader.Expect);
+                            break;
+                        case "Referer":
+                            placeholder[HttpRequestHeader.Referer] = _headers[HttpRequestHeader.Referer];
+                            _headers.Remove(HttpRequestHeader.Referer);
+                            break;
+                        case "TransferEncoding":
+                            placeholder[HttpRequestHeader.TransferEncoding] = _headers[HttpRequestHeader.TransferEncoding];
+                            _headers.Remove(HttpRequestHeader.TransferEncoding);
+                            break;
+                        case "UserAgent":
+                            placeholder[HttpRequestHeader.UserAgent] = _headers[HttpRequestHeader.UserAgent];
+                            _headers.Remove(HttpRequestHeader.UserAgent);
+                            break;
+                        case "ContentLength":
+                            placeholder[HttpRequestHeader.ContentLength] = _headers[HttpRequestHeader.ContentLength];
+                            _headers.Remove(HttpRequestHeader.ContentLength);
+                            break;
+                    }
+                request.Headers = _headers;
+                request.Proxy = _proxy;
+                request.CachePolicy = _cachePolicy;
+                request.Timeout = _timeout;
+                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                request.SendChunked = false;
+                if (!string.IsNullOrWhiteSpace(_method))
+                    request.Method = _method.ToUpper();
+                if (!string.IsNullOrEmpty(placeholder[HttpRequestHeader.Accept]))
+                    request.Accept = placeholder[HttpRequestHeader.Accept];
+                if (!string.IsNullOrEmpty(placeholder[HttpRequestHeader.ContentType]))
+                    request.ContentType = placeholder[HttpRequestHeader.ContentType];
+                if (!string.IsNullOrEmpty(placeholder[HttpRequestHeader.Expect]))
+                    request.Expect = placeholder[HttpRequestHeader.Expect];
+                if (!string.IsNullOrEmpty(placeholder[HttpRequestHeader.Referer]))
+                    request.Referer = placeholder[HttpRequestHeader.Referer];
+                if (!string.IsNullOrEmpty(placeholder[HttpRequestHeader.TransferEncoding]))
+                    request.TransferEncoding = placeholder[HttpRequestHeader.TransferEncoding];
+                if (!string.IsNullOrEmpty(placeholder[HttpRequestHeader.UserAgent]))
+                    request.UserAgent = placeholder[HttpRequestHeader.UserAgent];
+                else
+                    request.UserAgent = this.UserAgent;
+                if (!string.IsNullOrEmpty(placeholder[HttpRequestHeader.ContentLength]))
+                    request.ContentLength = long.Parse(placeholder[HttpRequestHeader.ContentLength]);
+
+                //request.Headers = _headers;
+                return request;
+            }
+            else
+            {
+                WebRequest request = WebRequest.Create(url);
+                request.Proxy = _proxy;
+                request.CachePolicy = _cachePolicy;
+                request.Timeout = _timeout;
+                request.Headers = _headers;
+                return request;
+            }
         }
-        public Stream OpenRead(Uri address)
+
+        public WebRequest CreateRequest(Uri url, WebHeaderCollection _headers, IWebProxy _proxy, int _timeout, System.Net.Cache.RequestCachePolicy _cachePolicy)
         {
-            return this.innerWebClient.OpenRead(address);
+            return CreateRequest(url, string.Empty, _headers, _proxy, _timeout, _cachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, WebHeaderCollection _headers, IWebProxy _proxy, int _timeout)
+        {
+            return this.CreateRequest(url, _headers, _proxy, _timeout, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, WebHeaderCollection _headers, IWebProxy _proxy)
+        {
+            return this.CreateRequest(url, _headers, _proxy, this.TimeOut, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, WebHeaderCollection _headers, int _timeout)
+        {
+            return this.CreateRequest(url, _headers, null, _timeout, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, IWebProxy _proxy, int _timeout)
+        {
+            return this.CreateRequest(url, this.Headers, _proxy, _timeout, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, IWebProxy _proxy)
+        {
+            return this.CreateRequest(url, this.Headers, _proxy, this.TimeOut, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, WebHeaderCollection _headers)
+        {
+            return this.CreateRequest(url, _headers, null, this.TimeOut, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, int _timeout)
+        {
+            return this.CreateRequest(url, this.Headers, null, _timeout, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, string _method, int _timeout)
+        {
+            return this.CreateRequest(url, _method, this.Headers, null, _timeout, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(Uri url, string _method)
+        {
+            return this.CreateRequest(url, _method, this.TimeOut);
+        }
+
+        public WebRequest CreateRequest(Uri url)
+        {
+            return this.CreateRequest(url, this.TimeOut);
+        }
+
+        public WebRequest CreateRequest(string url, string _method, int _timeout)
+        {
+            return this.CreateRequest(new Uri(url), _method, this.Headers, null, _timeout, this.CachePolicy);
+        }
+
+        public WebRequest CreateRequest(string url, string _method)
+        {
+            return this.CreateRequest(new Uri(url), _method, this.TimeOut);
+        }
+
+        public WebRequest CreateRequest(string url)
+        {
+            return this.CreateRequest(new Uri(url));
+        }
+
+        public WebRequest CreateRequest(string url, int _timeout)
+        {
+            return this.CreateRequest(new Uri(url), _timeout);
+        }
+
+        public WebRequest CreateRequest(string url, IWebProxy _proxy)
+        {
+            return this.CreateRequest(new Uri(url), _proxy);
+        }
+
+        public WebRequest CreateRequest(string url, IWebProxy _proxy, int _timeout)
+        {
+            return this.CreateRequest(new Uri(url), _proxy, _timeout);
+        }
+
+        public WebRequest CreateRequest(string url, WebHeaderCollection _headers)
+        {
+            return this.CreateRequest(new Uri(url), _headers);
+        }
+
+        public WebRequest CreateRequest(string url, WebHeaderCollection _headers, int _timeout)
+        {
+            return this.CreateRequest(new Uri(url), _headers, null, _timeout, this.CachePolicy);
+        }
+
+        private WebResponse Open(WebRequest request)
+        {
+            this.LastURL = request.RequestUri;
+            return request.GetResponse();
+        }
+
+        public WebResponse Open(Uri url, WebHeaderCollection _headers, IWebProxy _proxy, int _timeout, System.Net.Cache.RequestCachePolicy _cachePolicy)
+        {
+            return this.Open(this.CreateRequest(url, _headers, _proxy, _timeout, _cachePolicy));
+        }
+
+        public WebResponse Open(Uri url, WebHeaderCollection _headers, IWebProxy _proxy, int _timeout)
+        {
+            return this.Open(url, _headers, _proxy, _timeout, this.CachePolicy);
+        }
+
+        public WebResponse Open(Uri url, WebHeaderCollection _headers, IWebProxy _proxy)
+        {
+            return this.Open(url, _headers, _proxy, this.TimeOut, this.CachePolicy);
+        }
+
+        public WebResponse Open(Uri url, WebHeaderCollection _headers, int _timeout)
+        {
+            return this.Open(url, _headers, null, _timeout, this.CachePolicy);
+        }
+
+        public WebResponse Open(Uri url, IWebProxy _proxy, int _timeout)
+        {
+            return this.Open(url, this.Headers, _proxy, _timeout, this.CachePolicy);
+        }
+
+        public WebResponse Open(Uri url, IWebProxy _proxy)
+        {
+            return this.Open(url, this.Headers, _proxy, this.TimeOut, this.CachePolicy);
+        }
+
+        public WebResponse Open(Uri url, WebHeaderCollection _headers)
+        {
+            return this.Open(url, _headers, null, this.TimeOut, this.CachePolicy);
+        }
+
+        public WebResponse Open(Uri url, int _timeout)
+        {
+            return this.Open(url, this.Headers, null, _timeout, this.CachePolicy);
+        }
+
+        public WebResponse Open(Uri url)
+        {
+            return this.Open(url, this.Headers, null, this.TimeOut, this.CachePolicy);
+        }
+
+        public WebResponse Open(string url)
+        {
+            return this.Open(new Uri(url));
+        }
+
+        public WebResponse Open(string url, int _timeout)
+        {
+            return this.Open(new Uri(url), _timeout);
+        }
+
+        public WebResponse Open(string url, IWebProxy _proxy)
+        {
+            return this.Open(new Uri(url), _proxy);
+        }
+
+        public WebResponse Open(string url, IWebProxy _proxy, int _timeout)
+        {
+            return this.Open(new Uri(url), _proxy, _timeout);
+        }
+
+        public WebResponse Open(string url, WebHeaderCollection _headers)
+        {
+            return this.Open(new Uri(url), _headers);
+        }
+
+        public WebResponse Open(string url, WebHeaderCollection _headers, int _timeout)
+        {
+            return this.Open(new Uri(url), _headers, null, _timeout, this.CachePolicy);
+        }
+        #endregion
+
+        #region "OpenRead"
+        public Stream OpenRead(Uri url)
+        {
+            this.LastURL = url;
+            return this.innerWebClient.OpenRead(url);
+        }
+
+        public Stream OpenRead(string url)
+        {
+            return this.OpenRead(new Uri(url));
         }
         #endregion
 
@@ -70,12 +339,13 @@ namespace Leayal.Net
                     try
                     {
                         result = this.innerWebClient.DownloadString(address);
+                        break;
                     }
                     catch (WebException ex)
                     {
                         if (IsHTTP(address))
                         {
-                            if (!WorthRetry(ex.Response as HttpWebResponse))
+                            if (ex.Response is HttpWebResponse && !WorthRetry(ex.Response as HttpWebResponse))
                                 throw ex;
                         }
                         else
@@ -109,7 +379,7 @@ namespace Leayal.Net
                     WebException ex = e.Error as WebException;
                     if (IsHTTP(this.LastURL))
                     {
-                        if (WorthRetry(ex.Response as HttpWebResponse))
+                        if (ex.Response is HttpWebResponse && WorthRetry(ex.Response as HttpWebResponse))
                             this.innerWebClient.DownloadStringAsync(this.LastURL, e.UserState);
                         else
                             this.OnDownloadStringFinished(new DownloadStringFinishedEventArgs(ex, e.Cancelled, e.Result, e.UserState));
@@ -122,7 +392,7 @@ namespace Leayal.Net
                     WebException ex = e.Error.InnerException as WebException;
                     if (IsHTTP(this.LastURL))
                     {
-                        if (WorthRetry(ex.Response as HttpWebResponse))
+                        if (ex.Response is HttpWebResponse && WorthRetry(ex.Response as HttpWebResponse))
                             this.innerWebClient.DownloadStringAsync(this.LastURL);
                         else
                             this.OnDownloadStringFinished(new DownloadStringFinishedEventArgs(ex, e.Cancelled, e.Result, e.UserState));
@@ -159,12 +429,13 @@ namespace Leayal.Net
                     try
                     {
                         result = this.innerWebClient.DownloadData(address);
+                        break;
                     }
                     catch (WebException ex)
                     {
                         if (IsHTTP(address))
                         {
-                            if (!WorthRetry(ex.Response as HttpWebResponse))
+                            if (ex.Response is HttpWebResponse && !WorthRetry(ex.Response as HttpWebResponse))
                                 throw ex;
                         }
                         else
@@ -202,7 +473,7 @@ namespace Leayal.Net
                     WebException ex = e.Error as WebException;
                     if (IsHTTP(this.LastURL))
                     {
-                        if (WorthRetry(ex.Response as HttpWebResponse))
+                        if (ex.Response is HttpWebResponse && WorthRetry(ex.Response as HttpWebResponse))
                             this.innerWebClient.DownloadDataAsync(this.LastURL, e.UserState);
                         else
                             this.OnDownloadDataFinished(new DownloadDataFinishedEventArgs(ex, e.Cancelled, e.Result, e.UserState));
@@ -215,7 +486,7 @@ namespace Leayal.Net
                     WebException ex = e.Error.InnerException as WebException;
                     if (IsHTTP(this.LastURL))
                     {
-                        if (WorthRetry(ex.Response as HttpWebResponse))
+                        if (ex.Response is HttpWebResponse && WorthRetry(ex.Response as HttpWebResponse))
                             this.innerWebClient.DownloadStringAsync(this.LastURL);
                         else
                             this.OnDownloadDataFinished(new DownloadDataFinishedEventArgs(ex, e.Cancelled, e.Result, e.UserState));
@@ -237,39 +508,47 @@ namespace Leayal.Net
             this.DownloadFile(new Uri(address), localpath);
         }
 
-        public void DownloadFile(Uri address, string localpath)
+        public bool DownloadFile(Uri address, string localpath)
         {
+            bool result = false;
             if (!this.IsBusy)
             {
                 OnWorkStarted();
                 this.retried = 0;
                 this.LastURL = address;
-                string asd = localpath + ".dtmp";
+                FileInfo asd = new FileInfo(localpath + ".dtmp");
                 for (short i = 0; i < Retry; i++)
-                {
                     try
                     {
-                        if (File.Exists(localpath))
-                            File.Open(localpath, FileMode.Open).Close();
+                        if (asd.Exists)
+                            asd.Open(FileMode.Open, FileAccess.ReadWrite).Close();
                         else
-                            Directory.CreateDirectory(Path.GetDirectoryName(localpath));
-                        this.innerWebClient.DownloadFile(address, asd);
+                            Microsoft.VisualBasic.FileIO.FileSystem.CreateDirectory(asd.DirectoryName);
+                        this.innerWebClient.DownloadFile(address, asd.FullName);
+                        if (IsHTTP(address))
+                            if (!string.IsNullOrEmpty(this.innerWebClient.ResponseHeaders[HttpResponseHeader.ContentLength]))
+                                if (long.Parse(this.innerWebClient.ResponseHeaders[HttpResponseHeader.ContentLength]) != asd.Length)
+                                    throw new WebException($"Session '{address.OriginalString}' aborted.", WebExceptionStatus.RequestCanceled);
                         File.Delete(localpath);
-                        File.Move(localpath, asd);
+                        asd.MoveTo(localpath);
+                        //File.Move(asd.FullName, localpath);
+                        result = true;
+                        break;
                     }
                     catch (WebException ex)
                     {
                         if (IsHTTP(address))
                         {
-                            if (!WorthRetry(ex.Response as HttpWebResponse))
-                                throw ex;
+                            if (ex.Response is HttpWebResponse)
+                                if (!WorthRetry(ex.Response as HttpWebResponse))
+                                    throw ex;
                         }
                         else
                             throw ex;
                     }
-                }
                 OnWorkFinished();
             }
+            return result;
         }
 
         public void DownloadFileAsync(Uri address, string localPath)
@@ -280,21 +559,24 @@ namespace Leayal.Net
         public void DownloadFileAsync(Uri address, string localPath, object userToken)
         {
             if (!this.IsBusy)
-            {
-                OnWorkStarted();
-                this.retried = 0;
-                this.downloadfileLocalPath = localPath;
-                this.LastURL = address;
-                this.IsBusy = true;
-                if (File.Exists(localPath))
-                    File.Open(localPath, FileMode.Open).Close();
-                else
-                    Directory.CreateDirectory(Path.GetDirectoryName(localPath));
-                this.innerWebClient.DownloadFileAsync(address, localPath + ".dtmp", userToken);
-            }
+                DownloadFileAsyncEx(address, localPath, userToken);
         }
 
-        public void DownloadFileListAsync(Dictionary<Uri, string> fileList, ProgressChangedEventHandler progress_callback, AsyncCompletedEventHandler callback, object userToken)
+        private void DownloadFileAsyncEx(Uri address, string localPath, object userToken)
+        {
+            OnWorkStarted();
+            this.retried = 0;
+            this.downloadfileLocalPath = localPath;
+            this.LastURL = address;
+            this.IsBusy = true;
+            if (File.Exists(localPath))
+                File.Open(localPath, FileMode.Open).Close();
+            else
+                Directory.CreateDirectory(Path.GetDirectoryName(localPath));
+            this.innerWebClient.DownloadFileAsync(address, localPath + ".dtmp", userToken);
+        }
+
+        public void DownloadFileListAsync(Dictionary<Uri, string> fileList, object userToken)
         {
             if (fileList.Count > 0)
             {
@@ -305,14 +587,14 @@ namespace Leayal.Net
             }
         }
 
-        public void DownloadFileListAsync(List<DownloadInfo> filelist, string localPath)
+        public void DownloadFileListAsync(List<DownloadInfo> filelist, object userToken)
         {
-            this.DownloadFileListAsync(new DownloadInfoCollection(filelist), null);
+            this.DownloadFileListAsync(new DownloadInfoCollection(filelist), userToken);
         }
 
-        public void DownloadFileListAsync(DownloadInfo[] filelist, string localPath)
+        public void DownloadFileListAsync(DownloadInfo[] filelist, object userToken)
         {
-            this.DownloadFileListAsync(new DownloadInfoCollection(filelist), null);
+            this.DownloadFileListAsync(new DownloadInfoCollection(filelist), userToken);
         }
 
         public void DownloadFileListAsync(DownloadInfoCollection filelist, object userToken)
@@ -358,13 +640,13 @@ namespace Leayal.Net
                     WebException ex = e.Error as WebException;
                     if (IsHTTP(this.LastURL))
                     {
-                        if (WorthRetry(ex.Response as HttpWebResponse))
+                        if (ex.Response is HttpWebResponse && WorthRetry(ex.Response as HttpWebResponse))
                             this.innerWebClient.DownloadFileAsync(this.LastURL, this.downloadfileLocalPath + ".dtmp", e.UserState);
                         else
-                            this.OnDownloadFileCompleted(new AsyncCompletedEventArgs(ex, e.Cancelled, token));
+                            this.SeekActionDerpian(info, e, token);
                     }
                     else
-                        this.OnDownloadFileCompleted(new AsyncCompletedEventArgs(e.Error, e.Cancelled, token));
+                        this.SeekActionDerpian(info, e, token);
                 }
                 else if (e.Error.InnerException is WebException)
                 {
@@ -372,13 +654,17 @@ namespace Leayal.Net
                     WebException ex = e.Error.InnerException as WebException;
                     if (IsHTTP(this.LastURL))
                     {
-                        if (WorthRetry(ex.Response as HttpWebResponse))
+                        if (ex.Response is HttpWebResponse && WorthRetry(ex.Response as HttpWebResponse))
                             this.innerWebClient.DownloadStringAsync(this.LastURL);
                         else
-                            this.OnDownloadFileCompleted(new AsyncCompletedEventArgs(ex, e.Cancelled, token));
+                            this.SeekActionDerpian(info, e, token);
                     }
                     else
-                        this.OnDownloadFileCompleted(new AsyncCompletedEventArgs(e.Error.InnerException, e.Cancelled, token));
+                        this.SeekActionDerpian(info, e, token);
+                }
+                else
+                {
+                    this.SeekActionDerpian(info, e, token);
                 }
             }
             else if (e.Cancelled)
@@ -389,19 +675,22 @@ namespace Leayal.Net
                 {
                     File.Delete(this.downloadfileLocalPath);
                     File.Move(this.downloadfileLocalPath + ".dtmp", this.downloadfileLocalPath);
-
-                    if ((info != null) && (!info.filelist.IsEmpty))
-                    {
-                        DownloadInfo item = info.filelist.TakeFirst();
-                        this.OnDownloadFileProgressChanged(new DownloadFileProgressChangedEventArgs(info.filelist.CurrentIndex, info.filelist.Count));
-                        this.DownloadFileAsync(item.URL, item.Filename, info);
-                    }
-                    else
-                    { this.OnDownloadFileCompleted(new AsyncCompletedEventArgs(e.Error, e.Cancelled, token)); }
                 }
-                catch (Exception ex)
-                { this.OnDownloadFileCompleted(new AsyncCompletedEventArgs(ex, e.Cancelled, token)); }
+                catch { }
+                this.SeekActionDerpian(info, e, token);
             }
+        }
+
+        private void SeekActionDerpian(DownloadAsyncWrapper info, AsyncCompletedEventArgs e, object token)
+        {
+            if ((info != null) && (!info.filelist.IsEmpty))
+            {
+                DownloadInfo item = info.filelist.TakeFirst();
+                this.OnDownloadFileProgressChanged(new DownloadFileProgressChangedEventArgs(info.filelist.CurrentIndex, info.filelist.Count));
+                this.DownloadFileAsyncEx(item.URL, item.Filename, info);
+            }
+            else
+            { this.OnDownloadFileCompleted(new AsyncCompletedEventArgs(e.Error, e.Cancelled, token)); }
         }
         #endregion
 
@@ -442,7 +731,7 @@ namespace Leayal.Net
                 return false;
             else
             {
-                if ((url.Scheme == "http") || (url.Scheme == "https"))
+                if ((url.Scheme == Uri.UriSchemeHttp) || (url.Scheme == Uri.UriSchemeHttps))
                     return true;
                 else
                     return false;
@@ -496,6 +785,12 @@ namespace Leayal.Net
         }
 
         public event DownloadProgressChangedEventHandler DownloadProgressChanged;
+        protected void OnDownloadProgressChanged(DownloadProgressChangedEventArgs e)
+        {
+            if (DownloadProgressChanged != null)
+                this.syncContext.Post(new System.Threading.SendOrPostCallback(delegate { this.DownloadProgressChanged.Invoke(this, e); }), null);
+        }
+
         public event AsyncCompletedEventHandler DownloadFileCompleted;
         protected void OnDownloadFileCompleted(AsyncCompletedEventArgs e)
         {
@@ -510,15 +805,7 @@ namespace Leayal.Net
             OnWorkFinished();
             this.syncContext.Post(new System.Threading.SendOrPostCallback(delegate { this.DownloadDataCompleted?.Invoke(this, e); }), null);
         }
-        public class DownloadDataFinishedEventArgs : System.ComponentModel.AsyncCompletedEventArgs
-        {
-            public byte[] Result { get; }
-            public DownloadDataFinishedEventArgs(Exception ex, bool cancel, byte[] taskresult, object userToken) : base(ex, cancel, userToken)
-            {
-                this.Result = taskresult;
-            }
-        }
-
+        
         public delegate void DownloadStringFinishedEventHandler(object sender, DownloadStringFinishedEventArgs e);
         public event DownloadStringFinishedEventHandler DownloadStringCompleted;
         protected void OnDownloadStringFinished(DownloadStringFinishedEventArgs e)
@@ -526,24 +813,66 @@ namespace Leayal.Net
             OnWorkFinished();
             this.syncContext.Post(new System.Threading.SendOrPostCallback(delegate { this.DownloadStringCompleted?.Invoke(this, e); }), null);
         }
-        public class DownloadStringFinishedEventArgs : System.ComponentModel.AsyncCompletedEventArgs
-        {
-            public string Result { get; }
-            public DownloadStringFinishedEventArgs(Exception ex, bool cancel, string taskresult, object userToken) : base(ex, cancel, userToken)
-            {
-                this.Result = taskresult;
-            }
-        }
-
+        
         public delegate void DownloadFileProgressChangedEventHandler(object sender, DownloadFileProgressChangedEventArgs e);
         public event DownloadFileProgressChangedEventHandler DownloadFileProgressChanged;
         protected void OnDownloadFileProgressChanged(DownloadFileProgressChangedEventArgs e)
         {
             this.syncContext.Post(new System.Threading.SendOrPostCallback(delegate { this.DownloadFileProgressChanged?.Invoke(this, e); }), null);
         }
+
         #endregion
 
         #region "Private Class"
+        private class HttpWebRequestHeaders
+        {
+            Dictionary<HttpRequestHeader, string> innerDictionary;
+            public HttpWebRequestHeaders()
+            {
+                this.innerDictionary = new Dictionary<HttpRequestHeader, string>();
+            }
+
+            public string this[HttpRequestHeader key]
+            {
+                get
+                {
+                    if (!this.ContainsKey(key))
+                        return null;
+                    else
+                    {
+                        if (string.IsNullOrEmpty(this.innerDictionary[key]))
+                            return null;
+                        else
+                            return this.innerDictionary[key];
+                    }
+                }
+                set
+                {
+                    if (!this.ContainsKey(key))
+                        this.Add(key, value);
+                    else
+                        this.innerDictionary[key] = value;
+                }
+            }
+
+            public int Count { get { return this.innerDictionary.Count; } }
+
+            public ICollection<HttpRequestHeader> Keys { get { return this.innerDictionary.Keys; } }
+
+            public ICollection<string> Values { get { return this.innerDictionary.Values; } }
+
+            public void Add(HttpRequestHeader key, string value) { this.innerDictionary.Add(key, value); }
+
+            public void Clear() { this.innerDictionary.Clear(); }
+
+            public bool ContainsKey(HttpRequestHeader key) { return this.innerDictionary.ContainsKey(key); }
+
+            public IEnumerator<KeyValuePair<HttpRequestHeader, string>> GetEnumerator() { return this.GetEnumerator(); }
+
+            public bool Remove(HttpRequestHeader key) { return this.innerDictionary.Remove(key); }
+
+            public bool TryGetValue(HttpRequestHeader key, out string value) { return this.innerDictionary.TryGetValue(key, out value); }
+        }
         private class DownloadAsyncWrapper
         {
             public object userToken { get; }
@@ -554,6 +883,80 @@ namespace Leayal.Net
                 this.filelist = list;
             }
             public DownloadAsyncWrapper(DownloadInfoCollection list) : this(list, null) { }
+        }
+        public class DownloadInfo
+        {
+            public Uri URL
+            { get; private set; }
+            public string Filename
+            { get; private set; }
+
+            public DownloadInfo(Uri uUrl, string sFilename)
+            {
+                this.URL = uUrl;
+                this.Filename = sFilename;
+            }
+        }
+
+        public class DownloadInfoCollection
+        {
+            private ConcurrentQueue<DownloadInfo> myList;
+            public bool IsEmpty
+            { get { return this.myList.IsEmpty; } }
+            public int Count
+            { get; private set; }
+            public int CurrentIndex
+            { get; private set; }
+            public DownloadInfoCollection(IEnumerable<DownloadInfo> list)
+            {
+                this.myList = new ConcurrentQueue<DownloadInfo>(list);
+                this.Count = 0;
+                this.CurrentIndex = 0;
+            }
+            public DownloadInfoCollection()
+            {
+                this.myList = new ConcurrentQueue<DownloadInfo>();
+                this.Count = 0;
+                this.CurrentIndex = 0;
+            }
+
+            public void Add(string sUrl, string sFilename)
+            {
+                this.Add(new DownloadInfo(new Uri(sUrl), sFilename));
+            }
+
+            public void Add(Uri uUrl, string sFilename)
+            {
+                this.Add(new DownloadInfo(uUrl, sFilename));
+            }
+
+            public void Add(DownloadInfo item)
+            {
+                this.Count++;
+                this.myList.Enqueue(item);
+            }
+
+            public DownloadInfo TakeFirst()
+            {
+                if (this.IsEmpty)
+                    return null;
+                else
+                {
+                    DownloadInfo result;
+                    if (this.myList.TryDequeue(out result))
+                    {
+                        this.CurrentIndex++;
+                        return result;
+                    }
+                    else
+                        return null;
+                }
+            }
+
+            public void Dispose()
+            {
+                this.myList = null;
+            }
         }
         #endregion
     }
@@ -635,6 +1038,18 @@ namespace Leayal.Net
             }
         }
 
+        public string GetHeaderValue(HttpResponseHeader headerenum)
+        {
+            if (_response == null)
+                return null;
+            else
+            {
+                string result = null;
+                result = _response.Headers?[headerenum];
+                return result;
+            }
+        }
+
         /// Returns a <see cref="T:System.Net.WebRequest" /> object for t...
         protected override WebRequest GetWebRequest(Uri address)
         {
@@ -649,6 +1064,7 @@ namespace Leayal.Net
                     httpRequest.CookieContainer = CookieContainer;
                     httpRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
                     httpRequest.Timeout = this.TimeOut;
+                    httpRequest.SendChunked = false;
                     if ((this.Headers != null) && (this.Headers.HasKeys()))
                         httpRequest.Headers = this.Headers;
                     if (!string.IsNullOrEmpty(UserAgent))
@@ -669,12 +1085,23 @@ namespace Leayal.Net
         protected override WebResponse GetWebResponse(WebRequest request)
         {
             this._response = base.GetWebResponse(request);
+            if ((this._response.Headers != null) && (this._response.Headers.HasKeys()))
+            {
+                this.ResponseHeaders.Clear();
+                foreach (string s in this._response.Headers.AllKeys)
+                    this.ResponseHeaders[s] = this._response.Headers[s];
+            }
             return this._response;
         }
 
         protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
         {
             this._response = base.GetWebResponse(request, result);
+            if ((this._response.Headers != null) && (this._response.Headers.HasKeys()))
+            {
+                this.ResponseHeaders.Clear();
+                this.ResponseHeaders.Add(this._response.Headers);
+            }
             return this._response;
         }
 
@@ -692,6 +1119,25 @@ namespace Leayal.Net
         }
     }
 
+    #region "EventArgs"
+    public class DownloadStringFinishedEventArgs : System.ComponentModel.AsyncCompletedEventArgs
+    {
+        public string Result { get; }
+        public DownloadStringFinishedEventArgs(Exception ex, bool cancel, string taskresult, object userToken) : base(ex, cancel, userToken)
+        {
+            this.Result = taskresult;
+        }
+    }
+
+    public class DownloadDataFinishedEventArgs : System.ComponentModel.AsyncCompletedEventArgs
+    {
+        public byte[] Result { get; }
+        public DownloadDataFinishedEventArgs(Exception ex, bool cancel, byte[] taskresult, object userToken) : base(ex, cancel, userToken)
+        {
+            this.Result = taskresult;
+        }
+    }
+
     public class DownloadFileProgressChangedEventArgs : System.EventArgs
     {
         public int CurrentFileIndex { get; }
@@ -704,6 +1150,7 @@ namespace Leayal.Net
             this.Percent = (int)((CurrentFileIndex * 100) / TotalFileCount);
         }
     }
+    #endregion
 
     public class DownloadInfo
     {

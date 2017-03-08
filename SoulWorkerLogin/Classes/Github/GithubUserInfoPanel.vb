@@ -16,7 +16,7 @@ Namespace Classes.Github
             Me.myWebClient.Headers.Set(Net.HttpRequestHeader.Accept, "application/vnd.github.v3+json")
         End Sub
 
-        Private Sub myWebClient_DownloadStringCompleted(ByVal sender As Object, ByVal e As ExtendedWebClient.DownloadStringFinishedEventArgs) Handles myWebClient.DownloadStringCompleted
+        Private Sub myWebClient_DownloadStringCompleted(ByVal sender As Object, ByVal e As DownloadStringFinishedEventArgs) Handles myWebClient.DownloadStringCompleted
             If (e.Error IsNot Nothing) Then
 
             Else

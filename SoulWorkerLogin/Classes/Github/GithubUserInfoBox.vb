@@ -64,7 +64,7 @@ Namespace Classes.Github
             End If
         End Sub
 
-        Private Sub mywebClient_DownloadDataCompleted(sender As Object, e As ExtendedWebClient.DownloadDataFinishedEventArgs)
+        Private Sub mywebClient_DownloadDataCompleted(sender As Object, e As DownloadDataFinishedEventArgs)
             If (e.Error IsNot Nothing) Then
             Else
                 If (e.Result IsNot Nothing) AndAlso (e.Result.Length > 0) Then
