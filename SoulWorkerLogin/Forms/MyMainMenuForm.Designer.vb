@@ -171,6 +171,8 @@ Partial Class MyMainMenuForm
         '
         'PanelMain
         '
+        Me.PanelMain.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.PanelMain.Controls.Add(Me.ButtonManagePatch)
         Me.PanelMain.Controls.Add(Me.ButtonOption)
         Me.PanelMain.Controls.Add(Me.CheckBoxHideID)
@@ -181,7 +183,7 @@ Partial Class MyMainMenuForm
         Me.PanelMain.Controls.Add(Me.GameStart)
         Me.PanelMain.Location = New System.Drawing.Point(2, 2)
         Me.PanelMain.Name = "PanelMain"
-        Me.PanelMain.Size = New System.Drawing.Size(330, 107)
+        Me.PanelMain.Size = New System.Drawing.Size(339, 107)
         Me.PanelMain.TabIndex = 5
         Me.PanelMain.Visible = False
         '
@@ -278,9 +280,10 @@ Partial Class MyMainMenuForm
         Me.MyMainMenuPain.Controls.Add(Me.PanelMain)
         Me.MyMainMenuPain.Controls.Add(Me.PanelLogin)
         Me.MyMainMenuPain.Controls.Add(Me.PanelPrepare)
-        Me.MyMainMenuPain.Location = New System.Drawing.Point(5, 5)
+        Me.MyMainMenuPain.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.MyMainMenuPain.Location = New System.Drawing.Point(2, 2)
         Me.MyMainMenuPain.Name = "MyMainMenuPain"
-        Me.MyMainMenuPain.Size = New System.Drawing.Size(332, 110)
+        Me.MyMainMenuPain.Size = New System.Drawing.Size(341, 118)
         Me.MyMainMenuPain.TabIndex = 6
         '
         'MyMainMenuForm

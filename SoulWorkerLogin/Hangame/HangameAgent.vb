@@ -351,6 +351,8 @@ Namespace Hangame
                                     Throw New HangameAgentLoginException(Me.acc_Username, LanguageManager.GetMessage("HangameLogin_ExternalIDService", "ID was registered with external service." & vbNewLine & "WebClient Lite can't handle these accounts (yet). Instead, please use your Internet Explorer Browser to authorize the login and play."))
                                 ElseIf (messages(0).Contains("パスワードの認証に連続して失敗しました。")) Then
                                     Throw New HangameAgentLoginException(Me.acc_Username, LanguageManager.GetMessage("HangameLogin_TooManyAttempts", "Too many login attempts." & vbNewLine & "Please login with image verification."), True)
+                                ElseIf (messages(0).Contains("ログイン失敗回数が多く発見されたため、画像認証が必要です。")) Then
+                                    Throw New HangameAgentLoginException(Me.acc_Username, LanguageManager.GetMessage("HangameLogin_TooManyAttempts", "Too many login attempts." & vbNewLine & "Please login with image verification."), True)
                                 ElseIf (messages(0).Contains("ログインの失敗回数が多いため、画像認証が必要です。")) Then
                                     Throw New HangameAgentLoginException(Me.acc_Username, LanguageManager.GetMessage("HangameLogin_TooManyAttempts", "Too many login attempts." & vbNewLine & "Please login with image verification."), True)
                                 ElseIf (messages(0).Contains("画像認証に失敗しました。")) Then

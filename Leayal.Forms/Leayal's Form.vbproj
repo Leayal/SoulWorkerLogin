@@ -94,32 +94,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\ActiveButton.vb">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\ActiveItemsImpl.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\ActiveMenu.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\ActiveMenuImpl.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\IActiveItem.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\IActiveItems.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\IActiveMenu.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\SpillOverMode.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\ThemedItem.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\Themes\Aero.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\Themes\ITheme.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\Themes\Standard.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\Themes\Styled.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\Themes\ThemeBase.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\Themes\ThemeFactory.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Controls\Themes\XPStyle.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Utils\ListItemEventArgs.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Utils\ListModification.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Utils\ListModificationEventArgs.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Utils\ListRangeEventArgs.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Utils\ListWithEvents.vb" />
-    <Compile Include="TheCodeKing\ActiveButtons\Utils\Win32.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

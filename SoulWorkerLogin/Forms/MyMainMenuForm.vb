@@ -45,7 +45,6 @@ Public Class MyMainMenuForm
         Me.CaptchaImgBox.Location = New Point(theX - sizeX, 97)
         Me.MyMainMenuPain.Controls.Add(Me.CaptchaImgBox)
         Me.CaptchaImgBox.BringToFront()
-        Me.theSize = Me.Size
         Me.cacheBoolean_CaptchaBox = False
 
         PanelLogin.Visible = False
@@ -68,6 +67,11 @@ Public Class MyMainMenuForm
 
         '○‬●◯❍✪
         Me.InitialItemsForNotifyIcon()
+    End Sub
+
+    Protected Overrides Sub OnSizeChanged(e As EventArgs)
+        MyBase.OnSizeChanged(e)
+        If (Me.Size.Width > 0 AndAlso Me.Size.Height > 0) Then Me.theSize = Me.Size
     End Sub
 
     Private Sub ButtonCloseForm_Click(sender As Object, e As EventArgs)

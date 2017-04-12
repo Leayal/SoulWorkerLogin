@@ -7,8 +7,8 @@ Public Class LeayalExtendedForm
 
     Private myTitleBar As TitleBar
     Private myContentPanel As Panel
-    Private myTitleBarMenu As TheCodeKing.ActiveButtons.Controls.IActiveMenu
-    Private myHideToTrayButton As TheCodeKing.ActiveButtons.Controls.ActiveButton
+    'Private myTitleBarMenu As TheCodeKing.ActiveButtons.Controls.IActiveMenu
+    'Private myHideToTrayButton As TheCodeKing.ActiveButtons.Controls.ActiveButton
 
     Protected Overrides Sub OnPaintBackground(e As PaintEventArgs)
         MyBase.OnPaintBackground(e)
@@ -143,12 +143,6 @@ Public Class LeayalExtendedForm
                 Me.Controls.Add(Me.myContentPanel)
                 Me.Controls.Add(Me.myTitleBar)
                 Me.Size = New Size(Me.Size.Width, Me.Size.Height + Me.myTitleBar.Height)
-            Else
-                If (Me.AllowHideToTaskbar) Then
-                    Me.myTitleBarMenu = TheCodeKing.ActiveButtons.Controls.GetInstance(Me)
-                    Me.myHideToTrayButton = Me.CreateHideToTrayButton()
-                    Me.myTitleBarMenu.Items.Add(Me.myHideToTrayButton)
-                End If
             End If
         End If
     End Sub
@@ -158,31 +152,9 @@ Public Class LeayalExtendedForm
         If (Not DesignMode) Then
             If (AeroControl.IsWin10) Then
                 If (Me.myTitleBar IsNot Nothing) Then Me.myTitleBar.ShowHideToTrayBox = Me.AllowHideToTaskbar
-            Else
-                If (Me.AllowHideToTaskbar) Then
-                    If (Me.myTitleBarMenu IsNot Nothing) Then
-                        Me.myTitleBarMenu.Items.Add(Me.myHideToTrayButton)
-                    End If
-                Else
-                    If (Me.myTitleBarMenu IsNot Nothing) Then
-                        Me.myTitleBarMenu.Items.Remove(Me.myHideToTrayButton)
-                    End If
-                End If
             End If
         End If
     End Sub
-
-    Private Function CreateHideToTrayButton() As TheCodeKing.ActiveButtons.Controls.ActiveButton
-        CreateHideToTrayButton = New TheCodeKing.ActiveButtons.Controls.ActiveButton()
-        CreateHideToTrayButton.Text = "●"
-        AddHandler CreateHideToTrayButton.Click, AddressOf HideToTray
-        'CreateButton.BackColor = Color.Transparent
-        'CreateButton.FlatStyle = FlatStyle.Flat
-        'CreateButton.FlatAppearance.BorderSize = 0
-        'CreateButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(170, Color.Gray)
-        'CreateButton.FlatAppearance.MouseDownBackColor = Color.Gray
-        'CreateHideToTrayButton.TabStop = False
-    End Function
 
     Dim changingBG As Boolean = False
 
