@@ -123,9 +123,11 @@ Public Class PatchManagerForm
 
     Private Sub ButtonInstall_Click(sender As Object, e As EventArgs) Handles ButtonInstall.Click
         If (Not Me.myManager.IsBusy) Then
-            Me.ButtonInstall.Enabled = False
-            Me.ButtonUninstall.Enabled = False
-            Me.myManager.Install()
+            If (MessageBox.Show(LanguageManager.GetText("PatchManager", "installation_prompt", "The backup will be created IF IT IS NOT EXISTED." + vbNewLine + "DO YOU WANT TO **REPLACE** THE ORIGINAL FILE WITH THE PATCHED ONE???"), "Notice", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes) Then
+                Me.ButtonInstall.Enabled = False
+                Me.ButtonUninstall.Enabled = False
+                Me.myManager.Install()
+            End If
         End If
     End Sub
 

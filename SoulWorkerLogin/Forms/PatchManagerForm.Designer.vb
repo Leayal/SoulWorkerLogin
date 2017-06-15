@@ -65,7 +65,7 @@ Partial Class PatchManagerForm
         '
         Me.Panel1.Controls.Add(Me.LabelStep)
         Me.Panel1.Controls.Add(Me.ProgressBar1)
-        Me.Panel1.Location = New System.Drawing.Point(12, 82)
+        Me.Panel1.Location = New System.Drawing.Point(12, 111)
         Me.Panel1.Name = "Panel1"
         Me.Panel1.Size = New System.Drawing.Size(332, 38)
         Me.Panel1.TabIndex = 3
@@ -74,20 +74,24 @@ Partial Class PatchManagerForm
         '
         'ButtonInstall
         '
-        Me.ButtonInstall.Location = New System.Drawing.Point(32, 52)
+        Me.ButtonInstall.BackColor = System.Drawing.Color.Chartreuse
+        Me.ButtonInstall.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.ButtonInstall.Location = New System.Drawing.Point(12, 52)
         Me.ButtonInstall.Name = "ButtonInstall"
-        Me.ButtonInstall.Size = New System.Drawing.Size(126, 23)
+        Me.ButtonInstall.Size = New System.Drawing.Size(332, 23)
         Me.ButtonInstall.TabIndex = 4
-        Me.ButtonInstall.Text = "Install"
-        Me.ButtonInstall.UseVisualStyleBackColor = True
+        Me.ButtonInstall.Text = "Create backup and apply patch"
+        Me.ButtonInstall.UseVisualStyleBackColor = False
         '
         'ButtonUninstall
         '
-        Me.ButtonUninstall.Location = New System.Drawing.Point(196, 52)
+        Me.ButtonUninstall.FlatAppearance.BorderColor = System.Drawing.Color.Goldenrod
+        Me.ButtonUninstall.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.ButtonUninstall.Location = New System.Drawing.Point(12, 81)
         Me.ButtonUninstall.Name = "ButtonUninstall"
-        Me.ButtonUninstall.Size = New System.Drawing.Size(126, 23)
+        Me.ButtonUninstall.Size = New System.Drawing.Size(332, 23)
         Me.ButtonUninstall.TabIndex = 4
-        Me.ButtonUninstall.Text = "Uninstall"
+        Me.ButtonUninstall.Text = "Restore original file from backup"
         Me.ButtonUninstall.UseVisualStyleBackColor = True
         '
         'LabelStatus
@@ -126,7 +130,7 @@ Partial Class PatchManagerForm
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.TableLayoutPanel1.Controls.Add(Me.LinkLabel1, 0, 0)
-        Me.TableLayoutPanel1.Location = New System.Drawing.Point(32, 82)
+        Me.TableLayoutPanel1.Location = New System.Drawing.Point(32, 111)
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 1
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
@@ -138,7 +142,7 @@ Partial Class PatchManagerForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 14.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(356, 124)
+        Me.ClientSize = New System.Drawing.Size(356, 157)
         Me.Controls.Add(Me.Panel1)
         Me.Controls.Add(Me.TableLayoutPanel1)
         Me.Controls.Add(Me.LabelVersionDate)

@@ -133,11 +133,13 @@ Namespace Classes.Patches
                         Dim gamePatchFolder As String = IO.Path.Combine(myGameFolder, patchFolder)
                         Dim muwhahahaData12 As String = IO.Path.Combine(myGameFolder, myNeededData)
                         Dim patchfile As String = IO.Path.Combine(localPatchFolder, myNeededData)
-                        CommonMethods.EmptyFolder(gamePatchFolder)
+                        ' CommonMethods.EmptyFolder(gamePatchFolder)
                         If (My.Computer.FileSystem.DirectoryExists(localPatchFolder)) Then
                             If (CommonMethods.GetSHA1FromFile(patchfile) = dunIni.GetValue(myLang, DefineValues.EnglishPatch.patchchecksumValueKey, "nono")) Then
                                 If (CommonMethods.GetSHA1FromFile(muwhahahaData12) = dunIni.GetValue(myLang, DefineValues.EnglishPatch.checksumValueKey, "nono")) Then
-                                    FakeShadowCopy(patchfile, IO.Path.Combine(gamePatchFolder, myLang, myNeededData), True)
+                                    Dim data12backup As String = muwhahahaData12 + ".dataBackup"
+                                    If (Not My.Computer.FileSystem.FileExists(data12backup)) Then FakeShadowCopy(muwhahahaData12, data12backup, True)
+                                    FakeShadowCopy(patchfile, muwhahahaData12, True)
                                     e.Result = "install"
                                 Else
                                     Throw New PatchFailedException("Invalid or out-dated patch file, please rebuild the patch.")
@@ -149,17 +151,35 @@ Namespace Classes.Patches
                             Throw New PatchFailedException("No patch files found. Please build or rebuild the patch first.")
                         End If
                     Case "uninstall"
-                        Dim gamePatchFolder As String = IO.Path.Combine(CommonMethods.GetGameFolder(), patchFolder)
-                        If My.Computer.FileSystem.DirectoryExists(gamePatchFolder) Then
-                            CommonMethods.EmptyFolder(gamePatchFolder)
-                            My.Computer.FileSystem.DeleteDirectory(gamePatchFolder, FileIO.DeleteDirectoryOption.DeleteAllContents)
+                        Dim myGameFolder As String = CommonMethods.GetGameFolder()
+                        Dim gamePatchFolder As String = IO.Path.Combine(myGameFolder, patchFolder)
+                        Dim muwhahahaData12 As String = IO.Path.Combine(myGameFolder, myNeededData)
+                        Dim data12backup As String = muwhahahaData12 + ".dataBackup"
+                        If My.Computer.FileSystem.FileExists(data12backup) Then
+                            FakeShadowCopy(data12backup, muwhahahaData12, True)
+                            Try
+                                System.IO.File.Delete(data12backup)
+                            Catch ex As Exception
+
+                            End Try
+                        Else
+                            Throw New PatchFailedException("There is no backup to restore.")
                         End If
                         e.Result = "uninstall"
                     Case "uninstall-outdated"
-                        Dim gamePatchFolder As String = IO.Path.Combine(CommonMethods.GetGameFolder(), patchFolder)
-                        If My.Computer.FileSystem.DirectoryExists(gamePatchFolder) Then
-                            CommonMethods.EmptyFolder(gamePatchFolder)
-                            My.Computer.FileSystem.DeleteDirectory(gamePatchFolder, FileIO.DeleteDirectoryOption.DeleteAllContents)
+                        Dim myGameFolder As String = CommonMethods.GetGameFolder()
+                        Dim gamePatchFolder As String = IO.Path.Combine(myGameFolder, patchFolder)
+                        Dim muwhahahaData12 As String = IO.Path.Combine(myGameFolder, myNeededData)
+                        Dim data12backup As String = muwhahahaData12 + ".dataBackup"
+                        If My.Computer.FileSystem.FileExists(data12backup) Then
+                            FakeShadowCopy(data12backup, muwhahahaData12, True)
+                            Try
+                                System.IO.File.Delete(data12backup)
+                            Catch ex As Exception
+
+                            End Try
+                        Else
+                            Throw New PatchFailedException("There is no backup to restore.")
                         End If
                         e.Result = "uninstall-outdated"
                     Case "checkforpatchupdate"
@@ -458,7 +478,7 @@ Namespace Classes.Patches
 
         Public ReadOnly Property IsPatchInstalled() As Boolean
             Get
-                Return IO.File.Exists(IO.Path.Combine(CommonMethods.GetGameFolder(), patchFolder, Me.Language, myNeededData))
+                Return IO.File.Exists(IO.Path.Combine(CommonMethods.GetGameFolder(), myNeededData + ".dataBackup"))
             End Get
         End Property
 

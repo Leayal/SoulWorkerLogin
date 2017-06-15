@@ -184,6 +184,7 @@
         Public Shared ReadOnly Property ReactorFolder() As String
             Get
                 If (String.IsNullOrEmpty(theReactorFolder)) Then theReactorFolder = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Downloaded Program Files")
+                'If (String.IsNullOrEmpty(theReactorFolder)) Then theReactorFolder = IO.Path.Combine(My.Application.Info.DirectoryPath, "Reactor")
                 Return theReactorFolder
             End Get
         End Property
