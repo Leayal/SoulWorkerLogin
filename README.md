@@ -1,3 +1,6 @@
+# WARNING
+DISCONTINED. And it's likely to be unusable.
+
 # SoulWorker JP WebClient Lite
 This is a project to replace Internet Explorer's tasks for SoulWorker player.
 
